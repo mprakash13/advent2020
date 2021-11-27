@@ -1,4 +1,5 @@
-(ns advent2020.core)
+(ns advent2020.core
+  (:require clojure.core))
 
 (defn foo
   "I don't do a whole lot."
