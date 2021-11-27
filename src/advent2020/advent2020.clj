@@ -7,30 +7,39 @@
 (require '[clojure.core])
 (require '[clojure.string :as str])
 (require '[clojure.java.io :as io])
-; (require '(clojure.java.integer :as int))
 
-(defn puz1 [nums]
-  (let [pairs (for [x nums
-                    y nums
-                    :when (< x y)] (list x y))
-        pair (filter (fn [x] (= 2020 (apply + x))) pairs)]
-    (apply * (first pair))))
+(def datasets {:puzzle1 "resources/data1.txt"
+               :puzzle2 "resources/data1.txt"
+               :puzzle3 "resources/data2.txt"
+               :puzzle4 "resources/data2.txt"
+               :puzzle5 "resources/data3.txt"})
 
-(defn puz2 [nums]
-  (let [trips (for [x nums
-                    y nums
-                    z nums
-                    :when (and (< x y) (< y z))] (list x y z))
-        trip (filter #(= 2020 (apply + %)) trips)]
-    (apply * (first trip))))
+;;;;;;;;;;;;;;;;;;;;;
+;; Puzzles 1 & 2
+;;;;;;;;;;;;;;;;;;;;;
 
 
-(def nums-str  (slurp "resources/puz1-2.txt"))
+(def nums-str  (slurp (:puzzle1 datasets)))
 
 (def nums (map #(Integer/parseInt %) (str/split nums-str #"\n")))
 
+(defn puz1 [nums]
+  (for [x nums
+        y nums
+        :when (and (< x y) (= 2020 (+ x y)))]
+    (* x y)))
 
-;;; Puzzle 3 ;;;;;;;;;;
+(defn puz2 [nums]
+  (for [x nums
+        y nums
+        z nums
+        :when (and (< x y) (< y z) (= 2020 (+ x y z)))]
+    (* x y z)))
+
+;;; Puzzle 3 & 4 ;;;;;;;;;;
+
+(def pwd-file
+  (str/split (slurp (:puzzle3 datasets)) #"\n"))
 
 (defn parse-pwd [line]
   (let [sane-str
@@ -43,31 +52,28 @@
         kar (first kar-str)]
     (list lo hi kar pwd)))
 
-(defn count-chars [kar strng]
-  (reduce (fn [acc ltr] (if (= ltr kar) (inc acc) acc))
-          0 strng))
+(defn count-if [pred seq]
+  (reduce (fn [acc elem] (if (pred elem) (inc acc) acc)) 0 seq))
 
-(defn valid-pwd [lo hi kar pwd]
+(defn count-chars [kar strng]
+  (count-if #(= kar %) strng))
+;  (reduce (fn [acc ltr] (if (= ltr kar) (inc acc) acc))
+;          0 strng))
+
+(defn valid-pwd3 [lo hi kar pwd]
   (let [cnt (count-chars kar pwd)]
     (and (<= lo cnt) (>= hi cnt))))
 
-(defn count-if [pred seq]
-  (reduce (fn [acc elem] (if (pred elem) (inc acc) acc)) seq))
+(defn count-valid3 [pwd-file]
+  (count-if #(apply valid-pwd3 %)
+            (map parse-pwd pwd-file)))
 
-(def pwd-file 
-  (str/split (slurp "resources/puz3-4.txt") #"\n"))
-   
- 
-;
-;  Puzzle 4
-;
 
 (defn valid-pwd4 [lo hi kar pwd]
   (let [lo-match (= (get pwd (- lo 1)) kar)
-         hi-match (= (get pwd (- hi 1)) kar)]
-     (not= lo-match hi-match)))
+        hi-match (= (get pwd (- hi 1)) kar)]
+    (not= lo-match hi-match)))
 
 (defn count-valid4 [pwd-file]
-  (count (filter #(let [[lo hi kar pwd] (parse-pwd %)]
-           (valid-pwd4 lo hi kar pwd))
-       (filter #(not= "" %) pwd-file) )))
+   (count-if #(apply valid-pwd4 %)
+            (map parse-pwd pwd-file)))
