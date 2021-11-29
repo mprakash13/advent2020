@@ -43,9 +43,10 @@
   (-> datasets
       :puzzle3
       slurp
-      #(str/split #"\n")))
+      (str/split #"\n")))
 
 (defn parse-pwd [line]
+
   (let [sane-str
         (str/replace line
                      #"([0-9]+)-([0-9]+)[ ]+([a-z]):[ ]+([a-z]+)"
@@ -81,3 +82,44 @@
 (defn count-valid4 [pwd-file]
    (count-if #(apply valid-pwd4 %)
             (map parse-pwd pwd-file)))
+
+;;; Puzzle 5 ;;;;;;;;;;;;;;;;;
+
+(def forest 
+  (-> datasets
+      :puzzle5
+      slurp
+      (str/split #"\n")))
+
+(def period (count (forest 1)))
+(def depth (count forest))
+
+(defn move [[x y] [dx dy]]
+  (let [new-x (mod (+ x dx) period)
+        new-y (+ y dy)]
+    [new-x new-y]))
+
+(defn tree? [[x y]]
+  (= \# (get (forest y) x)))
+
+(defn make-path [[start-x start-y] [dx dy]]
+  (reverse 
+   (reduce 
+    (fn [path next-y] 
+      (cons (move (first path) (list dx dy)) 
+            path))
+    [[start-x start-y ]] 
+    (range start-y (- depth 1) dy))))
+
+(defn count-trees [[dx dy]]
+  (count-if tree? (make-path [0 0] [dx dy])))
+
+(def slopes '((1 1) 
+              (3 1)
+              (5 1)
+              (7 1)
+              (1 2)))
+
+(map count-trees slopes)
+(reduce * 1 (map count-trees slopes))
+
