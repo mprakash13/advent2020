@@ -18,10 +18,11 @@
 ;; Puzzles 1 & 2
 ;;;;;;;;;;;;;;;;;;;;;
 
-
-(def nums-str  (slurp (:puzzle1 datasets)))
-
-(def nums (map #(Integer/parseInt %) (str/split nums-str #"\n")))
+(def nums (-> datasets
+              :puzzle1
+              slurp
+              (str/split #"\n")
+              (#(map (fn [str] (Integer/parseInt str)) %))))
 
 (defn puz1 [nums]
   (for [x nums
@@ -39,7 +40,10 @@
 ;;; Puzzle 3 & 4 ;;;;;;;;;;
 
 (def pwd-file
-  (str/split (slurp (:puzzle3 datasets)) #"\n"))
+  (-> datasets
+      :puzzle3
+      slurp
+      #(str/split #"\n")))
 
 (defn parse-pwd [line]
   (let [sane-str
